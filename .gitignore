@@ -1,0 +1,9 @@
+*.safetensors
+*.pt
+*.pth
+*.ckpt
+*.bin
+__pycache__/
+.ipynb_checkpoints/
+.DS_Store
+

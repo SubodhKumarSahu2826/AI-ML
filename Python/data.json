@@ -1,0 +1,12 @@
+{
+    "name": "Subodh Kumar",
+    "isTeacher": true,
+    "address":{
+        "street": "123 Main St",
+        "city": "Springfield",
+        "state": "IL",
+        "zip": "62701"
+    },
+
+    "subjects": ["Maths", "AIML", "Python"]
+}

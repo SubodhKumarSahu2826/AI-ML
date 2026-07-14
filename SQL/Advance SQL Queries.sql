@@ -1,0 +1,246 @@
+SELECT @@AUTOCOMMIT;
+
+SET AUTOCOMMIT = 0;
+
+CREATE DATABASE PRIME;
+USE PRIME;
+
+CREATE TABLE ACCOUNTS(
+	ID INT PRIMARY KEY AUTO_INCREMENT,
+    NAME VARCHAR(50),
+    BALANCE DECIMAL(10.2)
+);
+
+INSERT INTO ACCOUNTS (NAME, BALANCE) VALUES
+('ADAM', 500.00),
+('BOB', 300.00),
+('CHARLIE', 1000.00);
+
+SELECT * FROM ACCOUNTS;
+
+-- TRANSACTIONS
+
+START TRANSACTION;
+
+UPDATE ACCOUNTS SET BALANCE = BALANCE - 50 WHERE ID = 1;
+UPDATE ACCOUNTS SET BALANCE = BALANCE + 50 WHERE ID = 2;
+
+COMMIT;
+
+START TRANSACTION;
+UPDATE ACCOUNTS SET BALANCE = BALANCE - 50 WHERE ID = 1;
+COMMIT;
+UPDATE ACCOUNTS SET BALANCE = BALANCE + 50 WHERE ID = 2;
+
+ROLLBACK;
+
+START TRANSACTION;
+UPDATE ACCOUNTS SET BALANCE = BALANCE +1000 WHERE ID =1;
+SAVEPOINT AFTER_WALLET_TOPUP;
+
+UPDATE ACCOUNTS SET BALANCE = BALANCE+10 WHERE ID =1;
+
+-- ERROR
+ROLLBACK TO AFTER_WALLET_TOPUP;
+COMMIT;
+
+
+CREATE TABLE CUSTOMERS(
+	CUSTOMER_ID INT PRIMARY KEY,
+    NAME VARCHAR(50),
+    CITY VARCHAR(50)
+);
+
+INSERT INTO CUSTOMERS VALUES
+(1, 'ALICE', 'MUMBAI'),
+(2, 'BOB', 'DELHI'),
+(3, 'CHARLIE', 'BANGLORE'),
+(4, 'DAVID', 'MUMBAI');
+
+CREATE TABLE ORDERS(
+	ORDER_ID INT PRIMARY KEY,
+    CUSTOMER_ID INT,
+    AMOUNT INT
+);
+
+INSERT INTO ORDERS VALUES
+(101,1,500),
+(102,1,900),
+(103,2,300),
+(104,5,700);
+
+SELECT * FROM CUSTOMERS;
+
+SELECT * FROM ORDERS;
+
+-- INNER JOINS
+
+SELECT *
+FROM CUSTOMERS C
+INNER JOIN ORDERS O
+ON C.CUSTOMER_ID = O.CUSTOMER_ID;
+
+-- LEFT JOIN
+
+SELECT *
+FROM CUSTOMERS C
+LEFT JOIN ORDERS O
+ON C.CUSTOMER_ID=O.CUSTOMER_ID;
+
+-- RIGHT JOIN
+
+SELECT *
+FROM CUSTOMERS C
+RIGHT JOIN ORDERS O
+ON C.CUSTOMER_ID=O.CUSTOMER_ID;
+
+-- OUTER JOIN
+
+SELECT *
+FROM CUSTOMERS C
+LEFT JOIN ORDERS O
+ON C.CUSTOMER_ID=O.CUSTOMER_ID
+
+UNION
+
+SELECT *
+FROM CUSTOMERS C
+RIGHT JOIN ORDERS O
+ON C.CUSTOMER_ID=O.CUSTOMER_ID;
+
+
+-- CROSS JOIN
+
+SELECT * 
+FROM CUSTOMERS
+CROSS JOIN ORDERS;
+
+-- SELF JOIN
+
+SELECT *
+FROM CUSTOMERS AS A
+JOIN CUSTOMERS AS B
+ON A.CUSTOMER_ID = B.CUSTOMER_ID;
+
+
+SELECT *
+FROM CUSTOMERS AS A
+LEFT JOIN ORDERS AS B
+ON A.CUSTOMER_ID=B.CUSTOMER_ID
+WHERE B.CUSTOMER_ID IS NULL;
+
+
+SELECT *
+FROM CUSTOMERS AS A
+RIGHT JOIN ORDERS AS B
+ON A.CUSTOMER_ID=B.CUSTOMER_ID
+WHERE A.CUSTOMER_ID IS NULL;
+
+
+SELECT * FROM CUSTOMERS;
+SELECT * FROM ORDERS;
+
+
+-- NESTED(SUB) QUERIES
+
+SELECT * 
+FROM ORDERS
+WHERE AMOUNT>(
+	SELECT AVG(AMOUNT)
+    FROM ORDERS
+);
+
+SELECT NAME,(
+SELECT COUNT(*)
+FROM ORDERS O
+WHERE O.CUSTOMER_ID=C.CUSTOMER_ID
+)AS ORDER_COUNT
+FROM CUSTOMERS C;
+
+
+SELECT
+	SUMMARY.CUSTOMER_ID,
+    SUMMARY.AVG_AMOUNT
+FROM
+
+(SELECT CUSTOMER_ID, AVG(AMOUNT) AS AVG_AMOUNT
+FROM ORDERS
+GROUP BY CUSTOMER_ID
+)AS SUMMARY;
+
+
+CREATE VIEW VIEW1 AS
+SELECT CUSTOMER_ID, NAME FROM CUSTOMERS;
+
+
+SELECT * FROM VIEW1
+where name='Alice';
+
+create view view1 as
+select c.customer_id, c.name, o.order_id
+from customers c
+inner join orders o
+on c.customer_id= o.customer_id;
+
+select * from view1;
+
+drop view view1;
+
+drop table accounts;
+
+create table accounts(
+account_id int primary key,
+name varchar(50),
+balance decimal(10,2),
+branch varchar(50)
+);
+
+insert into accounts values
+(1, 'Adam', 500.00, 'Mumbai'),
+(2, 'Bob', 300.00, 'Delhi'),
+(3, 'Charlie',700.00, 'Bangalore'),
+(4, 'David', 1000.00, 'Noida');
+
+select * from accounts;
+
+create index id_branch on accounts (branch);
+
+show index from accounts;
+
+select * 
+from accounts
+where branch='Mumbai';
+
+create index idx2 on accounts (branch, balance);
+
+drop index idx2 on accounts;
+
+
+delimiter $$
+create procedure check_balance (in acc_id int)
+begin
+	select balance
+    from accounts
+    where account_id=acc_id;
+end$$
+delimiter ;
+
+call check_balance(2);
+
+delimiter $$
+create procedure check_balance (in acc_id int, out bal decimal (10,2))
+begin
+	select balance into bal
+    from accounts
+    where account_id=acc_id;
+end$$
+delimiter ;
+
+call check_balance(1, @balance);
+select @balance;
+
+
+drop procedure if exists check_balance;
+
+
+
