@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+jinja2
+torch
+transformers
+sentencepiece
+accelerate
+safetensors
+python-multipart
